@@ -7,8 +7,8 @@ if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
 }
 
 $PythonVersion = & python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
-if ($PythonVersion -ne "3.12") {
-    throw "Python 3.12 is required; found Python $PythonVersion."
+if ($PythonVersion -ne "3.14") {
+    throw "Python 3.14 is required; found Python $PythonVersion."
 }
 
 if (-not (Test-Path ".venv")) { python -m venv .venv }
