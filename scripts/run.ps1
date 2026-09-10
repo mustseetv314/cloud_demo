@@ -8,7 +8,7 @@ if (-not (Test-Path ".venv\Scripts\Activate.ps1")) {
 . .\.venv\Scripts\Activate.ps1
 
 Write-Host @"
-MigrationDemo is running.
+Niagara is running.
 
 Local:
 http://localhost:8000

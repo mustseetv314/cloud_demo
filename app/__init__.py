@@ -1,1 +1,1 @@
-"""MigrationDemo application package."""
+"""Niagara application package."""
