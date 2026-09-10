@@ -1,0 +1,1 @@
+"""MigrationDemo application package."""
