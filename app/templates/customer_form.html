@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} - MigrationDemo{% endblock %}
+{% block content %}
+<h1 class="mb-4">{{ title }}</h1>
+<form method="post" class="customer-form">
+  <div class="mb-3"><label class="form-label" for="name">Name</label><input class="form-control" id="name" name="name" value="{{ customer.name if customer else '' }}" maxlength="200" required></div>
+  <div class="mb-3"><label class="form-label" for="company">Company</label><input class="form-control" id="company" name="company" value="{{ customer.company if customer else '' }}" maxlength="200" required></div>
+  <div class="mb-3"><label class="form-label" for="email">Email</label><input class="form-control" id="email" name="email" type="email" value="{{ customer.email if customer else '' }}" maxlength="320" required></div>
+  <button class="btn btn-primary" type="submit">Save Customer</button>
+  <a class="btn btn-secondary" href="/">Cancel</a>
+</form>
+{% endblock %}
