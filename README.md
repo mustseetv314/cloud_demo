@@ -1,8 +1,8 @@
-# Migration Demo Customer Manager
+# Niagara
 
 ## Purpose
 
-MigrationDemo is a deliberately simple, locally hosted customer manager. It is the source workload for an Azure migration proof of concept—not an Azure deployment or migration harness.
+Niagara is a deliberately simple, locally hosted customer manager. It is the source workload for an Azure migration proof of concept—not an Azure deployment or migration harness.
 
 ## Prerequisites
 
@@ -23,12 +23,12 @@ The script creates and activates `.venv`, installs the Python dependencies, and 
 
 ## Database
 
-At startup, the application connects with Windows Integrated Authentication and attempts to create `MigrationDemoDb`, creates its `customers` table, and adds five sample rows only when the table is empty.
+At startup, the application connects with Windows Integrated Authentication and attempts to create `NiagaraDb`, creates its `customers` table, and adds five sample rows only when the table is empty.
 
 Your Windows account must have permission to create the database. If it does not, connect to SQL Server as an administrator, run:
 
 ```sql
-CREATE DATABASE MigrationDemoDb;
+CREATE DATABASE NiagaraDb;
 ```
 
 Grant your Windows account access to that database if necessary, then restart the application. SQL Server stays local/private.
