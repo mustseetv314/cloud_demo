@@ -95,7 +95,7 @@ stages:
     jobs:
       - deployment: DeployJob
         displayName: Deploy Job
-        environment: 'production'
+        environment: 'poc'
         pool:
           vmImage: ubuntu-latest
         strategy:
