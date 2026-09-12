@@ -1,0 +1,124 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  # Azure DevOps variable group containing secrets and environment-specific values
+  - group: azure-appservice-prod
+  # Expected variables in the variable group:
+  # azureSubscription: Service connection name or ID for Azure deployment
+  # appServiceName: Azure App Service name
+  # resourceGroup: Azure resource group name
+  # pythonVersion: Python runtime version, e.g. 3.11
+  # appServiceSlot: Optional deployment slot name, e.g. production or staging
+  # startupCommand: Optional App Service startup command, e.g. "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+  # healthCheckPath: Optional health endpoint path, e.g. /health
+  # azureWebAppPackage: Optional package path override
+  - name: pythonVersion
+    value: '3.11'
+  - name: appServiceSlot
+    value: 'production'
+  - name: startupCommand
+    value: 'uvicorn app.main:app --host 0.0.0.0 --port 8000'
+  - name: healthCheckPath
+    value: '/health'
+  - name: azureWebAppPackage
+    value: '$(Build.ArtifactStagingDirectory)/drop'
+
+stages:
+  - stage: Build
+    displayName: Build and Test
+    jobs:
+      - job: BuildJob
+        displayName: Build Job
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: self
+            displayName: Checkout source
+
+          - task: UsePythonVersion@0
+            displayName: Use Python $(pythonVersion)
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: Install dependencies
+
+          - script: |
+              if [ -f pyproject.toml ]; then
+                pip install build
+                python -m build
+              else
+                echo "No pyproject.toml found; skipping wheel build."
+              fi
+            displayName: Build package
+
+          - script: |
+              if [ -d tests ]; then
+                pip install pytest pytest-cov
+                pytest -q --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
+              else
+                echo "No tests directory found; skipping tests."
+              fi
+            displayName: Run tests
+            continueOnError: false
+
+          - task: CopyFiles@2
+            displayName: Copy application files to artifact staging
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)'
+              Contents: |
+                **/*
+                !.git/**
+                !.azure-pipelines/**
+                !tests/**
+                !**/__pycache__/**
+                !**/*.pyc
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/drop'
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish build artifact
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/drop'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  - stage: Deploy
+    displayName: Deploy to Azure App Service
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployJob
+        displayName: Deploy Job
+        environment: 'production'
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  displayName: Download build artifact
+                  artifact: drop
+
+                - task: AzureWebApp@1
+                  displayName: Deploy to Azure App Service
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appType: 'webApp'
+                    appName: '$(appServiceName)'
+                    resourceGroupName: '$(resourceGroup)'
+                    package: '$(Pipeline.Workspace)/drop'
+                    deploymentMethod: 'auto'
+                    startupCommand: '$(startupCommand)'
+
+                - script: |
+                    echo "Deployment completed."
+                    echo "App Service: $(appServiceName)"
+                    echo "Health check path: $(healthCheckPath)"
+                  displayName: Post-deployment summary
