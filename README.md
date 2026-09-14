@@ -16,7 +16,11 @@ Niagara is a deliberately simple, locally hosted customer manager. It is the sou
 Open PowerShell in the repository root and run:
 
 ```powershell
+cd to project directory
 .\scripts\setup.ps1
+```
+```
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 The script creates and activates `.venv`, installs the Python dependencies, and copies `.env.example` to the ignored `.env` file when needed. Edit `.env` if your SQL Server instance differs.
